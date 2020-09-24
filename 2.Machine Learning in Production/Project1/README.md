@@ -9,9 +9,9 @@
 
 [[Jupyter Notebook - Model and Deployment]](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project1/SageMaker%20Project.ipynb)
    
-[[Model Train Scripts]](https://github.com/Pyligent/Sentiment-Analysis-AWS-deployment/tree/master/train)
+[[Model Train Scripts]](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/tree/master/2.Machine%20Learning%20in%20Production/Project1/train)
    
-[[Model Predict Scripts]](https://github.com/Pyligent/Sentiment-Analysis-AWS-deployment/tree/master/serve)
+[[Model Predict Scripts]](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/tree/master/2.Machine%20Learning%20in%20Production/Project1/predict)
    
 #### 1. Download or otherwise retrieve the data
 
