@@ -1,7 +1,7 @@
 # Plagiarism Detection Model, Machine Learning Deployment
 
-- **Model : SVM Classification Model and PyTorch LSTM Model**
-- **Accuracy : 1.0**
+- **Model : PyTorch Dense model for binary classification**
+ 
 
 This repository contains code and associated files for deploying a plagiarism detector using AWS SageMaker.
 
@@ -28,7 +28,7 @@ Your first task will be to create **containment features**. To understand contai
 
 > Containment is defined as the **intersection** of the n-gram word count of the Wikipedia Source Text (S) with the n-gram word count of the Student  Answer Text (S) *divided* by the n-gram word count of the Student Answer Text.
 
-$$ \frac{\sum{count(\text{ngram}_{A}) \cap count(\text{ngram}_{S})}}{\sum{count(\text{ngram}_{A})}} $$
+<a href="https://www.codecogs.com/eqnedit.php?latex=\frac{\sum&space;count(ngram_{A})\bigcap&space;count(ngram_{A})}{\sum&space;count(ngram_{A})}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{\sum&space;count(ngram_{A})\bigcap&space;count(ngram_{A})}{\sum&space;count(ngram_{A})}" title="\frac{\sum count(ngram_{A})\bigcap count(ngram_{A})}{\sum count(ngram_{A})}" /></a>
 
 If the two texts have no n-grams in common, the containment will be 0, but if _all_ their n-grams intersect then the containment will be 1. Intuitively, you can see how having longer n-gram's in common, might be an indication of cut-and-paste plagiarism. In this project, it will be up to you to decide on the appropriate `n` or several `n`'s to use in your final model.
 
@@ -45,24 +45,24 @@ Containment a good way to find overlap in word usage between two documents; it m
 
 This project will be broken down into three main notebooks:
 
-**Notebook 1: Data Exploration** [Jyputer Notebook](https://github.com/Pyligent/Plagiarism-Detection-Model-AWS/blob/master/1_Data_Exploration.ipynb)
+**Notebook 1: Data Exploration** [Jyputer Notebook](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project_Plagiarism_Detection_AWS_SageMaker/1_Data_Exploration.ipynb)
 * Load in the corpus of plagiarism text data.
 * Explore the existing data features and the data distribution.
 * This first notebook is **not** required in your final project submission.
 
-**Notebook 2: Feature Engineering** [Jyputer Notebook](https://github.com/Pyligent/Plagiarism-Detection-Model-AWS/blob/master/2_Plagiarism_Feature_Engineering.ipynb)
+**Notebook 2: Feature Engineering** [Jyputer Notebook](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project_Plagiarism_Detection_AWS_SageMaker/2_Plagiarism_Feature_Engineering.ipynb)
 
 * Clean and pre-process the text data.
 * Define features for comparing the similarity of an answer text and a source text, and extract similarity features.
 * Select "good" features, by analyzing the correlations between different features.
 * Create train/test `.csv` files that hold the relevant features and class labels for train/test data points.
 
-**Notebook 3: Train and Deploy Your Model in SageMaker** [Jyputer Notebook](https://github.com/Pyligent/Plagiarism-Detection-Model-AWS/blob/master/3_Training_a_Model.ipynb)
+**Notebook 3: Train and Deploy Your Model in SageMaker** [Jyputer Notebook](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project_Plagiarism_Detection_AWS_SageMaker/3_Training_a_Model_binary_class_PyTorch.ipynb)
 
 * Upload your train/test feature data to S3.
 * Define a binary classification model and a training script.
 * Two Models: SVM Classification Model and PyTorch Model
 * Train your model and deploy it using SageMaker.
 * Evaluate your deployed classifier.
-
+**To be done:SVM classifier for multilevel plagiarsim**
 ---
