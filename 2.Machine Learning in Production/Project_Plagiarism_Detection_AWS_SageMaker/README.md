@@ -48,12 +48,12 @@ This project will be broken down into three main notebooks:
 **Notebook 1: Data Exploration** [Jyputer Notebook](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project_Plagiarism_Detection_AWS_SageMaker/1_Data_Exploration.ipynb)
 * Load in the corpus of plagiarism text data.
 * Explore the existing data features and the data distribution.
-* This first notebook is **not** required in your final project submission.
+ 
 
 **Notebook 2: Feature Engineering** [Jyputer Notebook](https://github.com/NilakshanKunananthaseelan/Machine-Learning-Engineer-Nanodegree-Program/blob/master/2.Machine%20Learning%20in%20Production/Project_Plagiarism_Detection_AWS_SageMaker/2_Plagiarism_Feature_Engineering.ipynb)
 
 * Clean and pre-process the text data.
-* Define features for comparing the similarity of an answer text and a source text, and extract similarity features.
+* Define features for comparing the similarity of an answer text and a source text, and extract similarity features(containement features and LCS).
 * Select "good" features, by analyzing the correlations between different features.
 * Create train/test `.csv` files that hold the relevant features and class labels for train/test data points.
 
@@ -61,8 +61,9 @@ This project will be broken down into three main notebooks:
 
 * Upload your train/test feature data to S3.
 * Define a binary classification model and a training script.
-* Two Models: SVM Classification Model and PyTorch Model
+* PyTorch Model
 * Train your model and deploy it using SageMaker.
 * Evaluate your deployed classifier.
-**To be done:SVM classifier for multilevel plagiarsim**
+
+* **To be done:SVM classifier for multilevel plagiarsim**
 ---
