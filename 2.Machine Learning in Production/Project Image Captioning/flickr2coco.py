@@ -34,6 +34,7 @@ class JsonCreate():
     def load_captions(self,captions_path):
 
         captions_dict = dict()
+        s_ = 0
         with open(captions_path)as f:
             cap_list = list()
             i = 1
@@ -47,6 +48,9 @@ class JsonCreate():
                 if(i%6==0):
                     img_id = s[0].split('.')[0]
                     captions_dict[img_id] = cap_list
+                    s_ +=int(len(cap_list))
+                    if(len(cap_list)!=5):
+                        print(cap_list)
                     cap_list = []
                     i = 1
 
@@ -55,6 +59,7 @@ class JsonCreate():
                 #     captions_dict[k] = v
 
         self.captions_dict = captions_dict
+        print(s_)
 
 
     def load_image_names(self,file_path):
@@ -64,6 +69,7 @@ class JsonCreate():
             for line in f:
                 img_name = line.rstrip()
                 img_id = img_name.split('.')[0]
+#                 print(img_id)
                 image_cap_dict[img_id] = self.captions_dict[img_id]
 
         self.image_cap_dict = image_cap_dict
@@ -95,14 +101,18 @@ class JsonCreate():
 
         annot_dict = {'annotations':dict()}
         annot_list = list()
-         
+        s_ = 0
 
         
         for i,(_id,captions) in enumerate(self.image_cap_dict.items()): 
-            for caption in captions:
+            for j,caption in enumerate(captions):
+                cap_id = str(int(_id.split('_')[0])+(1+i)*(j+1))
+#                 print(cap_id)
+                s_+=1
+#                 if(len(caption.spl))
                 temp_dict = {
                             "image_id":_id,
-                            "id" : _id.split('_')[0],
+                            "id" :cap_id+'2133',
                             "caption":caption
                             }
                  
@@ -110,6 +120,7 @@ class JsonCreate():
 
         annot_dict['annotations'] = annot_list
         self.annot_dict = annot_dict
+        print(s_)
 
     def dump_json(self):
 

@@ -18,7 +18,8 @@ class Vocabulary(object):
                 unk_word='<unk>',
                 anns_file='annotations/captions_train2014.json',
                 # data='coco',
-                load_vocab=False):
+                load_vocab=False,
+                is_flickr=False):
         """Initialize the Vocabulary class"""
     
         self.threshold = threshold
@@ -28,7 +29,7 @@ class Vocabulary(object):
         self.unk_word = unk_word
         self.annotations_file = anns_file
         self.load_vocab = load_vocab
-        # self.data = data
+        self.is_flickr = is_flickr
         self.get_vocab()
         
     def get_vocab(self):
@@ -69,9 +70,10 @@ class Vocabulary(object):
         """Add all the tokens from captions to the vocabulary space which meet threshold requirement"""
         counter = Counter()
         # if self.data=='coco':
-        coco = COCO(self.annotations_file)
+        coco = COCO(self.annotations_file,self.is_flickr)
         
         ids = coco.anns.keys()
+        
         for i,_id in enumerate(ids):
             
             caption = str(coco.anns[_id]['caption'])

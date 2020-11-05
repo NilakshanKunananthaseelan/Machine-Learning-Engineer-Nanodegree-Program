@@ -3,15 +3,15 @@ import sys
 import time
 import numpy as np
 import torch
-from torchvision import transforms
 import torch.utils.data as data
 import matplotlib.pyplot as plt
+
 from nltk.translate.bleu_score import sentence_bleu,SmoothingFunction
 
-PRINT_FREQ = 500
+PRINT_FREQ = 50
 
 def train(train_loader,encoder,decoder,criterion,
-          optimizer,vocab_size,epoch,total_step,start_step=1,start_loss=0.0):
+          optimizer,vocab_size,epoch,total_step,start_step=1,start_loss=0.0,out_dir="./models"):
     """Train the encoder-decoder model for one epoch,save the check points evert 'PRINT_FREQ' steps and return the epoch's average train loss"""
     
     #Train mode
@@ -63,7 +63,7 @@ def train(train_loader,encoder,decoder,criterion,
         
         if train_step%PRINT_FREQ==0:
             print("Epoch {},Step [{}/{}],{}s, Loss:{:.4f}\n".format(epoch,train_step,total_step,time.time()-start,loss.item()))
-            ckpt_file = os.path.join("./models","train-model-{}-{}.pkl".format(epoch,train_step))
+            ckpt_file = os.path.join(out_dir,"train-model-{}-{}.pkl".format(epoch,train_step))
             
             save_checkpoint(ckpt_file,encoder,decoder,optimizer,total_loss,epoch,train_step)
             start = time.time()
@@ -72,7 +72,8 @@ def train(train_loader,encoder,decoder,criterion,
 
 
 
-def validate(val_loader,encoder,decoder,criterion,vocab,epoch,total_step,start_step=1,start_loss=0.0,start_bleu_4=0.0):
+def validate(val_loader,encoder,decoder,criterion,vocab,epoch,total_step,start_step=1,
+             start_loss=0.0,start_bleu_4=0.0,out_dir="./models"):
     """Validate the model for an epoch and return average validation loss and BLEU-4 score for each epoch"""
     
     #Evaluation mode
@@ -96,6 +97,7 @@ def validate(val_loader,encoder,decoder,criterion,vocab,epoch,total_step,start_s
             
             for batch in val_loader:
                 images,captions = batch[0],batch[1]
+                break
                 
             
             if torch.cuda.is_available():
@@ -114,7 +116,7 @@ def validate(val_loader,encoder,decoder,criterion,vocab,epoch,total_step,start_s
                     pred_ids.append(scores.argmax().item())
                 #convert ids to tokens
                 pred_word_list = word_list(pred_ids,vocab)
-                gt_word_list = word_list(captions[i].numpy(),vocab)
+                gt_word_list = word_list(captions[i].cpu().numpy(),vocab)
                 
                 #Calculate BLEU-4 score
                 batch_bleu_4+=sentence_bleu([gt_word_list],
@@ -125,15 +127,15 @@ def validate(val_loader,encoder,decoder,criterion,vocab,epoch,total_step,start_s
             loss = criterion(outputs.view(-1,len(vocab)),captions.view(-1))
             total_loss+=loss.item()
             
-            print("Epoch {},Val Step [{}/{}],{}s, Loss: {:.4f}, VLEU-4: {:.4f} \n".format(epoch,val_step,total_step,time.time()-start,loss.item(),batch_bleu_4/len(outputs)))
+            print("Epoch {},Val Step [{}/{}],{}s, Loss: {:.4f}, BLEU-4: {:.4f} \n".format(epoch,val_step,total_step,time.time()-start,loss.item(),batch_bleu_4/len(outputs)))
             
             sys.stdout.flush()
             
             if val_step%PRINT_FREQ==0:
-                print("Epoch {},Step [{}/{}],{}s, Loss:{:.4f}\n".format(epoch,val_step,total_step,time.time()-start,loss.item()))
-                ckpt_file = os.path.join("./models","val-model-{}-{}.pkl".format(epoch,val_step))
+                print("Epoch {},Val Step [{}/{}],{}s, Loss:{:.4f}\n".format(epoch,val_step,total_step,time.time()-start,loss.item()))
+                ckpt_file = os.path.join(out_dir,"val-model-{}-{}.pkl".format(epoch,val_step))
             
-                save_val_checkpoint(ckpt_file,encoder,decoder,total_loss,total_bleu4,epoch,val_step)
+                save_val_checkpoint(ckpt_file,encoder,decoder,total_loss,total_bleu_4,epoch,val_step)
                 start = time.time()
     
     return total_loss/total_step,total_bleu_4/total_step
@@ -161,7 +163,8 @@ def save_val_checkpoint(file,encoder,decoder,total_loss,
                 "val_step": val_step,
                }, file)
 
-                 
+ 
+                
 def save_epoch(filename, encoder, decoder, optimizer, train_losses, val_losses, 
                val_bleu, val_bleus, epoch):
     """Save at the end of an epoch. Save the model's weights along with the 
@@ -178,19 +181,19 @@ def save_epoch(filename, encoder, decoder, optimizer, train_losses, val_losses,
                }, filename)
 
 def early_stopping(val_bleus, patience=3):
-    """Check to stop training if  Bleu-4 scores remains constant for  'patience' 
-    number of consecutive epochs."""
-    
-    if patience > len(val_bleus): # Min epeoch count should be 'patience'
+    """Check if the validation Bleu-4 scores no longer improve for 3 
+    (or a specified number of) consecutive epochs."""
+    # The number of epochs should be at least patience before checking
+    # for convergence
+    if patience > len(val_bleus):
         return False
-    recent_bleu4_score = val_bleus[-patience:]
-    
-    
-    if len(set(recent_bleu4_score)) == 1:
+    latest_bleus = val_bleus[-patience:]
+    # If all the latest Bleu scores are the same, return True
+    if len(set(latest_bleus)) == 1:
         return True
     max_bleu = max(val_bleus)
-    if max_bleu in recent_bleu_score:
-        #Check for convergence
+    if max_bleu in latest_bleus:
+        # If one of recent Bleu scores improves, not yet converged
         if max_bleu not in val_bleus[:len(val_bleus) - patience]:
             return False
         else:
@@ -198,10 +201,9 @@ def early_stopping(val_bleus, patience=3):
     # If none of recent Bleu scores is greater than max_bleu, it has converged
     return True
             
-def word_list(word_id_list, vocab):
-    """
-    Take word ids and vocabulary built from the dataset,
-    return list of mapped words for the ids
+def word_list(word_idx_list, vocab):
+    """Take a list of word ids and a vocabulary from a dataset as inputs
+    and return the corresponding words as a list.
     """
     word_list = []
     for i in range(len(word_idx_list)):
@@ -214,14 +216,15 @@ def word_list(word_id_list, vocab):
     return word_list
 
 def clean_sentence(word_idx_list, vocab):
-    """
-    Take word ids and vocabulary built from the dataset,
-    return sentence made up of that words
+    """Take a list of word ids and a vocabulary from a dataset as inputs
+    and return the corresponding sentence (as a single Python string).
     """
     sentence = []
     for i in range(len(word_idx_list)):
         vocab_id = word_idx_list[i]
+        
         word = vocab.id2word[vocab_id]
+         
         if word == vocab.end_seq:
             break
         if word != vocab.start_seq:
@@ -229,33 +232,10 @@ def clean_sentence(word_idx_list, vocab):
     sentence = " ".join(sentence)
     return sentence
 
-def get_prediction(data_loader=None, encoder=None, decoder=None, vocab=None,image_path=None):
-    """
-    Loop over images from the data loader or run on given image,
-    predict the captions based on greedy search and beam search
-
-    """
-    if data_loader is not None:
-        orig_image, image = next(iter(data_loader))
-    elif image_path is not None:
-        from PIL import Image
-
-        transform_test = transforms.Compose([ 
-        transforms.Resize(256),                          # smaller edge of image resized to 256
-        transforms.CenterCrop(224),                      # get 224x224 crop from the center
-        transforms.ToTensor(),                           # convert the PIL Image to a tensor
-        transforms.Normalize((0.485, 0.456, 0.406),      # normalize image for pre-trained model
-                             (0.229, 0.224, 0.225))])
-        
-    
-
-
-        PIL_image = Image.open(image_path)
-        orig_image = np.array(PIL_image)
-        image = transform_test(PIL_image)
-    else:
-        raise("You must pass a data_loader or an image path")
-
+def get_prediction(data_loader, encoder, decoder, vocab):
+    """Loop over images in a dataset and print model's top three predicted 
+    captions using beam search."""
+    orig_image, image = next(iter(data_loader))
     plt.imshow(np.squeeze(orig_image))
     plt.title("Sample Image")
     plt.show()
@@ -276,4 +256,9 @@ def get_prediction(data_loader=None, encoder=None, decoder=None, vocab=None,imag
         print (sentence)      
         
         
-        
+def calculate_bleu_score(source,prediction):
+    smoothing_fn = SmoothingFunction()
+    bleu = sentence_bleu(source,prediction,                                      smoothing_function=smoothing_fn.method1)
+    return bleu
+    
+    

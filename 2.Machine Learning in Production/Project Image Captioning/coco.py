@@ -139,8 +139,10 @@ class COCO:
                iscrowd (boolean)       : get anns for given crowd label (False or True)
         :return: ids (int array)       : integer array of ann ids
         """
-        imgIds = imgIds if _isArrayLike(imgIds) else [imgIds]
-        catIds = catIds if _isArrayLike(catIds) else [catIds]
+        print(imgIds)
+        imgIds = imgIds if (_isArrayLike(imgIds) and (self.is_flickr)) else [imgIds]
+        catIds = catIds if (_isArrayLike(catIds) and (self.is_flickr)) else [catIds]
+        print(" ---",imgIds)
 
         if len(imgIds) == len(catIds) == len(areaRng) == 0:
             anns = self.dataset['annotations']
@@ -207,10 +209,15 @@ class COCO:
         :param ids (int array)       : integer ids specifying anns
         :return: anns (object array) : loaded ann objects
         """
-        if _isArrayLike(ids):
-            return [self.anns[id] for id in ids]
-        elif type(ids) == int:
-            return [self.anns[ids]]
+        if(self.is_flickr):
+            if('_' in ids):
+                return self.anns[ids]
+
+        else:
+            if _isArrayLike(ids):
+                return [self.anns[id] for id in ids]
+            elif type(ids) == int:
+                return [self.anns[ids]]
 
     def loadCats(self, ids=[]):
         """
@@ -247,6 +254,7 @@ class COCO:
         :param anns (array of object): annotations to display
         :return: None
         """
+    
         if len(anns) == 0:
             return 0
         if 'segmentation' in anns[0] or 'keypoints' in anns[0]:
@@ -310,6 +318,7 @@ class COCO:
             p = PatchCollection(polygons, facecolor='none', edgecolors=color, linewidths=2)
             ax.add_collection(p)
         elif datasetType == 'captions':
+            
             for ann in anns:
                 print(ann['caption'])
 
